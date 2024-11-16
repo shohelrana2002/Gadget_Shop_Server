@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+// jwt token require
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const port = process.env.PORT || 3000;
 
@@ -26,6 +28,16 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    //  jwt token connect
+    app.post("/authentication", async (req, res) => {
+      const userEmail = req.body;
+      const token = jwt.sign(userEmail, process.env.ACCESS_KEY_TOKEN, {
+        expiresIn: "10d",
+      });
+      res.send({ token });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
