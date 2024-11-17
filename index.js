@@ -23,11 +23,24 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+const userCollection = client.db("gadgetShop").collection("users");
+const productCollection = client.db("gadgetShop").collection("products");
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    // insert users
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ message: "You Have Already Exist" });
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
 
     //  jwt token connect
     app.post("/authentication", async (req, res) => {
@@ -44,7 +57,6 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
     // await client.close();
   }
 }
