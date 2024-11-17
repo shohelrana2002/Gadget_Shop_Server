@@ -7,7 +7,12 @@ require("dotenv").config();
 const port = process.env.PORT || 3000;
 
 //   middle were
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    optionsSuccessStatus: 200,
+  })
+);
 app.use(express.json());
 
 //mongoDb
@@ -40,6 +45,15 @@ async function run() {
       }
       const result = await userCollection.insertOne(user);
       res.send(result);
+    });
+
+    // get user
+
+    app.get("/user/:email", async (req, res) => {
+      const query = { email: req.params.email };
+      const user = await userCollection.findOne(query);
+      res.send(user);
+      console.log(user);
     });
 
     //  jwt token connect
