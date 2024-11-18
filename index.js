@@ -15,12 +15,37 @@ app.use(
 );
 app.use(express.json());
 
-//mongoDb
+// custom middle Were
+const VerificationJWT = (req, res, next) => {
+  const authorization = req.header.authorization;
+  if (!authorization) {
+    res.send({ message: "UnAuthorization Access" });
+  }
+  const token = authorization.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_KEY_TOKEN, (error, decoded) => {
+    if (error) {
+      res.send({ message: "authorization De_ni_ade" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
 
+// verify seller middle were
+
+const verifySeller = async (req, res, next) => {
+  const email = req.decoded.email;
+  const query = { email: email };
+  const user = await userCollection.findOne(query);
+  if (user?.role !== "seller") {
+    res, send({ message: "Forbidden Access" });
+  }
+  next();
+};
+
+//mongoDb
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.db_user}:${process.env.db_pass}@cluster0.ykv18.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -30,10 +55,8 @@ const client = new MongoClient(uri, {
 });
 const userCollection = client.db("gadgetShop").collection("users");
 const productCollection = client.db("gadgetShop").collection("products");
-
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // insert users
     app.post("/users", async (req, res) => {
@@ -48,13 +71,23 @@ async function run() {
     });
 
     // get user
-
     app.get("/user/:email", async (req, res) => {
       const query = { email: req.params.email };
       const user = await userCollection.findOne(query);
       res.send(user);
       console.log(user);
     });
+    //add Products
+    app.post(
+      "/add-products",
+      VerificationJWT,
+      verifySeller,
+      async (req, res) => {
+        const product = req.body;
+        const result = await productCollection.insertOne(product);
+        res.send(result);
+      }
+    );
 
     //  jwt token connect
     app.post("/authentication", async (req, res) => {
