@@ -98,7 +98,8 @@ async function run() {
     // to do filter brand
     // }
     app.get("/all-products", async (req, res) => {
-      const { title, brand, sort, category } = req.query;
+      const { title, brand, sort, category, page = 1, limit = 9 } = req.query;
+
       const query = {};
       //name title category search
       if (title) {
@@ -110,20 +111,25 @@ async function run() {
       if (title) {
         query.category = { $regex: category, $options: "i" };
       }
+      // pagenetion
+      const numberPage = Number(page);
+      const limitNumber = Number(limit);
       // sort
       const sortOption = sort === "asc" ? 1 : -1;
       const products = await productCollection
         .find(query)
+        .skip((numberPage - 1) * limitNumber)
+        .limit(limitNumber)
         .sort({ price: sortOption })
         .toArray();
       // total products
       const totalProducts = await productCollection.countDocuments(query);
       // search product
-      const productInfo = await productCollection
-        .find({}, { projection: { category: 1, brand: 1 } })
-        .toArray();
-      const brands = [...new Set(productInfo.map((p) => p.brand))];
-      const categories = [...new Set(productInfo.map((p) => p.category))];
+      // const productInfo = await productCollection
+      //   .find({}, { projection: { category: 1, brand: 1 } })
+      //   .toArray();
+      const brands = [...new Set(products.map((p) => p.brand))];
+      const categories = [...new Set(products.map((p) => p.category))];
 
       res.json({ products, brands, categories, totalProducts });
     });
