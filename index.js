@@ -116,7 +116,16 @@ async function run() {
         .find(query)
         .sort({ price: sortOption })
         .toArray();
-      res.json(products);
+      // total products
+      const totalProducts = await productCollection.countDocuments(query);
+      // search product
+      const productInfo = await productCollection
+        .find({}, { projection: { category: 1, brand: 1 } })
+        .toArray();
+      const brands = [...new Set(productInfo.map((p) => p.brand))];
+      const categories = [...new Set(productInfo.map((p) => p.category))];
+
+      res.json({ products, brands, categories, totalProducts });
     });
     //  jwt token connect
     app.post("/authentication", async (req, res) => {
