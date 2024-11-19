@@ -17,14 +17,15 @@ app.use(express.json());
 
 // custom middle Were
 const VerificationJWT = (req, res, next) => {
-  const authorization = req.header.authorization;
+  const authorization = req.headers.authorization;
   if (!authorization) {
-    res.send({ message: "UnAuthorization Access" });
+    return res.status(401).json({ message: "Unauthorized Access" });
   }
   const token = authorization.split(" ")[1];
+
   jwt.verify(token, process.env.ACCESS_KEY_TOKEN, (error, decoded) => {
     if (error) {
-      res.send({ message: "authorization De_ni_ade" });
+      return res.status(401).json({ message: "Token not found" });
     }
     req.decoded = decoded;
     next();
@@ -75,7 +76,7 @@ async function run() {
       const query = { email: req.params.email };
       const user = await userCollection.findOne(query);
       res.send(user);
-      console.log(user);
+      // console.log(user);
     });
     //add Products
     app.post(
@@ -88,7 +89,35 @@ async function run() {
         res.send(result);
       }
     );
+    // get products
 
+    // {
+    // to do Name searching
+    // to do filter [price]
+    // to do filter category
+    // to do filter brand
+    // }
+    app.get("/all-products", async (req, res) => {
+      const { title, brand, sort, category } = req.query;
+      const query = {};
+      //name title category search
+      if (title) {
+        query.title = { $regex: title, $options: "i" };
+      }
+      if (brand) {
+        query.brand = { $regex: brand, $options: "i" };
+      }
+      if (title) {
+        query.category = { $regex: category, $options: "i" };
+      }
+      // sort
+      const sortOption = sort === "asc" ? 1 : -1;
+      const products = await productCollection
+        .find(query)
+        .sort({ price: sortOption })
+        .toArray();
+      res.json(products);
+    });
     //  jwt token connect
     app.post("/authentication", async (req, res) => {
       const userEmail = req.body;
