@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // jwt token require
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -45,7 +46,6 @@ const verifySeller = async (req, res, next) => {
 };
 
 //mongoDb
-const { MongoClient, ServerApiVersion } = require("mongodb");
 const uri = `mongodb+srv://${process.env.db_user}:${process.env.db_pass}@cluster0.ykv18.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -141,7 +141,15 @@ async function run() {
       });
       res.send({ token });
     });
-
+    // patch add to wishlist
+    app.patch("/wishlist/add", VerificationJWT, async (req, res) => {
+      const { userEmail, productId } = req.body;
+      const result = await userCollection.updateOne(
+        { email: userEmail },
+        { $addToSet: { wishlist: new ObjectId(String(productId)) } }
+      );
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
