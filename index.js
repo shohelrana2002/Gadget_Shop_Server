@@ -142,7 +142,7 @@ async function run() {
       res.send({ token });
     });
     // patch add to wishlist
-    app.patch("/wishlist/add", VerificationJWT, async (req, res) => {
+    app.patch("/wishlist/add", async (req, res) => {
       const { userEmail, productId } = req.body;
       const result = await userCollection.updateOne(
         { email: userEmail },
