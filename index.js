@@ -44,6 +44,17 @@ const verifySeller = async (req, res, next) => {
   }
   next();
 };
+// verify seller middle were
+//test just
+const verifySeller3 = async (req, res, next) => {
+  const email = req.decoded.email;
+  const query = { email: email };
+  const user = await userCollection.findOne(query);
+  if (user?.role !== "seller") {
+    res, send({ message: "Forbidden Access" });
+  }
+  next();
+};
 
 //mongoDb
 const uri = `mongodb+srv://${process.env.db_user}:${process.env.db_pass}@cluster0.ykv18.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
