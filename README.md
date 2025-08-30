@@ -9,6 +9,5 @@ _Use To This Projet:_  <br>
 - dotenv
   
 
-[MongoDb](url) <br>
-[Express JS](url)  <br>
-# server Backend Gadget Shopping Phones 🤳 🤳 
+
+# server Backend Gadget Shopping Phones 
