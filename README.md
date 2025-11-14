@@ -1,6 +1,6 @@
 **Backend Gadget Shop Server** <br>
 
-_Use To This Projet::_  <br>
+_Use To This Projet_  <br>
 -
 - express
 - mongoose
